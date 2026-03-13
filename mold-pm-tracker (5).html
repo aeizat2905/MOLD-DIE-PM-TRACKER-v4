@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MoldPM Tracker v8</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--sur:#161b22;--sur2:#1e2530;--bor:#2a3441;--acc:#f0a500;--acc2:#e05c00;--tx:#e6edf3;--tx2:#8b949e;--red:#da3633;--grn:#238636;--r:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:15px;}
+.screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at 20% 80%,rgba(240,165,0,.08),transparent 50%),
+             radial-gradient(ellipse at 80% 20%,rgba(224,92,0,.06),transparent 50%),var(--bg);}
+.screen.active{display:flex;}
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:24px;width:100%;max-width:500px;}
+.brand{text-align:center;margin-bottom:20px;}
+.brand .ico{font-size:44px;display:block;margin-bottom:8px;filter:drop-shadow(0 0 18px rgba(240,165,0,.4));}
+.brand h1{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--acc);}
+.brand p{color:var(--tx2);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.step{background:var(--sur2);border:1px solid var(--bor);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+.step-n{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:5px;}
+.step p{font-size:13px;color:var(--tx2);line-height:1.65;}
+.step code{background:var(--bg);color:var(--acc);padding:1px 6px;border-radius:3px;font-size:12px;}
+.notice{background:rgba(240,165,0,.07);border:1px solid rgba(240,165,0,.25);border-radius:8px;padding:13px;margin-bottom:14px;}
+.notice h4{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:6px;}
+.notice p{font-size:13px;color:var(--tx2);line-height:1.6;} .notice a{color:var(--acc);}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2);margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:12px 13px;background:var(--bg);border:1px solid var(--bor);border-radius:var(--r);color:var(--tx);font-family:'Barlow',sans-serif;font-size:16px;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--acc);}
+.fg select option{background:var(--sur2);} .fg textarea{resize:vertical;min-height:76px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:460px){.form-row{grid-template-columns:1fr;}}
+.role-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.role-btn{padding:18px 10px;background:var(--sur2);border:2px solid var(--bor);border-radius:var(--r);color:var(--tx2);cursor:pointer;text-align:center;transition:all .2s;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;text-transform:uppercase;user-select:none;}
+.role-btn .ri{font-size:26px;display:block;margin-bottom:5px;}
+.role-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(240,165,0,.08);}
+.admin-f{display:none;} .admin-f.show{display:block;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:13px 20px;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .15s;user-select:none;}
+.btn-full{width:100%;}
+.btn-acc{background:var(--acc);color:#000;} .btn-acc:disabled{background:#4a3a00;color:#666;cursor:not-allowed;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-grn{background:var(--grn);color:#fff;}
+.btn-blue{background:#1f6feb;color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--bor);color:var(--tx2);}
+.btn-warn{background:#9e6a03;color:#fff;}
+.btn-sm{padding:8px 13px;font-size:13px;} .btn-xs{padding:5px 10px;font-size:12px;}
+.err{color:var(--red);font-size:13px;margin-top:8px;display:none;line-height:1.5;padding:9px 12px;background:rgba(218,54,51,.1);border-radius:6px;border-left:3px solid var(--red);}
+.err.show{display:block;}
+.ok-msg{color:#3fb950;font-size:13px;margin-top:8px;display:none;padding:9px 12px;background:rgba(35,134,54,.1);border-radius:6px;}
+.ok-msg.show{display:block;}
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh;} #app.show{display:flex;}
+.topbar{background:var(--sur);border-bottom:2px solid var(--acc);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-l{display:flex;align-items:center;gap:9px;}
+.topbar h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--acc);}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(240,165,0,.15);color:var(--acc);border:1px solid rgba(240,165,0,.3);}
+.badge.adm{background:rgba(224,92,0,.15);color:var(--acc2);border-color:rgba(224,92,0,.3);}
+.sync-bar{background:var(--sur2);border-bottom:1px solid var(--bor);padding:5px 16px;font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:6px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--grn);flex-shrink:0;}
+.dot.off{background:var(--red);} .dot.spin{background:var(--acc);animation:pu 1s infinite;}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;background:var(--sur);border-bottom:1px solid var(--bor);overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:13px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc);}
+.main{flex:1;padding:16px;max-width:900px;margin:0 auto;width:100%;}
+.sec{display:none;} .sec.active{display:block;}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.sec-t{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:800;letter-spacing:2px;text-transform:uppercase;}
+.sec-t span{color:var(--acc);}
+.block{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:18px;margin-bottom:16px;}
+.block h3{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bor);}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;}
+.stat{background:var(--sur);border:1px solid var(--bor);border-radius:9px;padding:13px;text-align:center;cursor:pointer;transition:border-color .2s;}
+.stat:hover{border-color:rgba(240,165,0,.4);}
+.stat.active-filter{border-color:var(--acc);background:rgba(240,165,0,.06);}
+.sn{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;color:var(--acc);line-height:1;}
+.sl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2);margin-top:3px;}
+/* CHIPS */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;background:var(--sur2);border:1.5px solid var(--bor);border-radius:20px;cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;color:var(--tx2);user-select:none;}
+.chip.sel{background:rgba(240,165,0,.12);border-color:var(--acc);color:var(--acc);}
+.chip .ck{width:14px;height:14px;border:1.5px solid var(--tx2);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;}
+.chip.sel .ck{background:var(--acc);border-color:var(--acc);color:#000;}
+/* PHOTO */
+.photo-drop{border:2px dashed var(--bor);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--sur2);position:relative;overflow:hidden;}
+.photo-drop:hover{border-color:var(--acc);}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.pd-ico{font-size:30px;margin-bottom:7px;} .pd-txt{font-size:13px;color:var(--tx2);line-height:1.5;} .pd-txt strong{color:var(--tx);}
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.pi{position:relative;width:78px;height:78px;border-radius:8px;overflow:hidden;border:1px solid var(--bor);flex-shrink:0;background:var(--sur2);}
+.pi img{width:100%;height:100%;object-fit:cover;display:block;}
+.pi .pi-rm{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;}
+.pi .ov{position:absolute;inset:0;background:rgba(13,17,23,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
+.pi-sp{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;}
+.pi-prog{font-size:10px;color:var(--acc);font-weight:700;}
+.upinfo{margin-top:8px;font-size:12px;color:var(--tx2);min-height:16px;}
+/* RECORDS */
+.rlist{display:flex;flex-direction:column;gap:9px;}
+.rec{background:var(--sur);border:1px solid var(--bor);border-radius:9px;padding:13px 16px;}
+.rec.status-done{border-left:3px solid var(--grn);}
+.rec.status-wip{border-left:3px solid var(--acc);}
+.rec-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;margin-bottom:8px;flex-wrap:wrap;}
+.rec-id{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--acc);}
+.rec-sub{font-size:12px;color:var(--tx2);margin-top:1px;}
+.sbadge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;flex-shrink:0;}
+.s-ok{background:rgba(35,134,54,.2);color:#3fb950;border:1px solid rgba(35,134,54,.3);}
+.s-wip{background:rgba(240,165,0,.12);color:var(--acc);border:1px solid rgba(240,165,0,.25);}
+.rmeta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:7px;}
+.rmi{font-size:12px;color:var(--tx2);} .rmi strong{color:var(--tx);font-weight:600;}
+.rtype{display:inline-block;background:rgba(224,92,0,.12);color:var(--acc2);border:1px solid rgba(224,92,0,.25);border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.rdet{font-size:12px;color:var(--tx2);background:var(--bg);border-radius:5px;padding:7px 10px;margin-bottom:6px;border-left:3px solid var(--bor);}
+.rdet.hi{border-left-color:var(--acc);}
+.parts-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.ptag{background:rgba(240,165,0,.1);color:var(--acc);border:1px solid rgba(240,165,0,.2);border-radius:12px;padding:2px 9px;font-size:11px;font-weight:600;}
+.photo-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.photo-thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;border:1px solid var(--bor);cursor:pointer;}
+.rec-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+/* MANAGE */
+.mlist{display:flex;flex-direction:column;gap:7px;}
+.mitem{display:flex;align-items:center;justify-content:space-between;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--r);padding:10px 13px;gap:8px;}
+.mitem span{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;}
+.add-r{display:flex;gap:8px;margin-bottom:12px;}
+.add-r input{flex:1;padding:10px 12px;background:var(--bg);border:1px solid var(--bor);border-radius:var(--r);color:var(--tx);font-family:'Barlow',sans-serif;font-size:15px;}
+.add-r input:focus{outline:none;border-color:var(--acc);}
+.fbar{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.fbar input,.fbar select{padding:9px 11px;background:var(--sur);border:1px solid var(--bor);border-radius:var(--r);color:var(--tx);font-family:'Barlow',sans-serif;font-size:14px;flex:1;min-width:90px;-webkit-appearance:none;appearance:none;}
+.fbar input:focus,.fbar select:focus{outline:none;border-color:var(--acc);}
+.empty{text-align:center;padding:44px 20px;color:var(--tx2);}
+.empty .ei{font-size:42px;margin-bottom:12px;opacity:.35;}
+.empty h4{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+/* MODAL */
+.mover{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
+.mover.show{display:flex;}
+.mbox{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:22px;width:100%;max-width:500px;margin:auto;}
+.mbox h3{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:16px;}
+.macts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+.macts .btn{width:auto;padding:9px 18px;}
+/* LIGHTBOX */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:500;align-items:center;justify-content:center;}
+#lightbox.show{display:flex;}
+#lightbox img{max-width:94vw;max-height:90vh;border-radius:8px;object-fit:contain;}
+.lbc{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:20px;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.lba{position:absolute;bottom:16px;right:16px;}
+/* LOADER + TOAST */
+.lover{display:none;position:fixed;inset:0;background:rgba(13,17,23,.92);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.lover.show{display:flex;}
+.sp{width:36px;height:36px;border:3px solid var(--bor);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ltxt{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--sur2);border:1px solid var(--bor);color:var(--tx);padding:11px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:88vw;text-align:center;line-height:1.4;animation:tu .2s ease;}
+@keyframes tu{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setupScreen" style="display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:#0d1117;">
+  <div style="background:#161b22;border:1px solid #2a3441;border-radius:12px;padding:24px;width:100%;max-width:480px;">
+
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:44px;margin-bottom:8px;">⚙️</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:3px;color:#f0a500;">MoldPM</div>
+      <div style="color:#8b949e;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-top:3px;">Database Setup</div>
+    </div>
+
+    <div style="background:rgba(240,165,0,.07);border:1px solid rgba(240,165,0,.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#8b949e;line-height:1.6;">
+      📱 <strong style="color:#e6edf3;">Phone users:</strong> Open this app via <strong style="color:#f0a500;">https://</strong> (GitHub Pages or Netlify) — not from a downloaded file.
+    </div>
+
+    <div style="background:#1e2530;border:1px solid #2a3441;border-radius:8px;padding:11px 13px;margin-bottom:8px;font-size:13px;color:#8b949e;line-height:1.6;">
+      <strong style="color:#f0a500;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Step 1</strong><br>
+      Google Sheet → Extensions → Apps Script → paste <strong style="color:#e6edf3;">MoldPM-AppsScript.js</strong> → Save
+    </div>
+    <div style="background:#1e2530;border:1px solid #2a3441;border-radius:8px;padding:11px 13px;margin-bottom:8px;font-size:13px;color:#8b949e;line-height:1.6;">
+      <strong style="color:#f0a500;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Step 2</strong><br>
+      Run <code style="background:#0d1117;color:#f0a500;padding:1px 5px;border-radius:3px;">setupSheets</code> → authorise. Then run <code style="background:#0d1117;color:#f0a500;padding:1px 5px;border-radius:3px;">createDailyTrigger</code>
+    </div>
+    <div style="background:#1e2530;border:1px solid #2a3441;border-radius:8px;padding:11px 13px;margin-bottom:16px;font-size:13px;color:#8b949e;line-height:1.6;">
+      <strong style="color:#f0a500;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Step 3</strong><br>
+      Deploy → New Deployment → Web App → Execute as: <code style="background:#0d1117;color:#f0a500;padding:1px 5px;border-radius:3px;">Me</code> | Access: <code style="background:#0d1117;color:#f0a500;padding:1px 5px;border-radius:3px;">Anyone</code> → copy <strong style="color:#f0a500;">/exec URL</strong>
+    </div>
+
+    <div style="margin-bottom:6px;">
+      <label style="display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8b949e;margin-bottom:7px;">Paste your Apps Script /exec URL here</label>
+      <input
+        type="text"
+        inputmode="url"
+        id="urlInput"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%;padding:13px;background:#0d1117;border:1px solid #2a3441;border-radius:8px;color:#e6edf3;font-size:15px;font-family:'Barlow',sans-serif;box-sizing:border-box;-webkit-appearance:none;"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();doConnect();}"
+      >
+    </div>
+
+    <div id="setupErr" style="display:none;color:#da3633;font-size:13px;padding:9px 12px;background:rgba(218,54,51,.1);border-radius:6px;border-left:3px solid #da3633;margin-bottom:8px;line-height:1.5;"></div>
+    <div id="setupOk" style="display:none;color:#3fb950;font-size:13px;padding:9px 12px;background:rgba(35,134,54,.1);border-radius:6px;margin-bottom:8px;">✅ Connected!</div>
+
+    <!-- BUTTON — inline everything, no CSS class needed -->
+    <button
+      id="connectBtn"
+      style="display:block;width:100%;padding:18px;margin-top:8px;background:#f0a500;color:#000000;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none;appearance:none;touch-action:manipulation;position:relative;z-index:50;box-shadow:0 0 0 3px rgba(240,165,0,.3);"
+      onclick="doConnect()"
+    >🔗 CONNECT TO GOOGLE SHEETS</button>
+
+    <!-- FALLBACK: if button still unresponsive, show version stamp so user knows file is updated -->
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:#444;letter-spacing:1px;">
+      v8.1 — if button does not respond, try: <strong style="color:#f0a500;">hard refresh</strong> (hold reload button → Empty Cache &amp; Hard Reload)
+    </div>
+
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen" style="display:none;">
+  <div class="card">
+    <div class="brand"><span class="ico">⚙️</span><h1>MoldPM</h1><p>Mold Die Preventive Maintenance</p></div>
+    <div class="fg"><label>Login As</label>
+      <div class="role-row">
+        <div class="role-btn" id="btnU" onclick="selRole('user')"><span class="ri">👷</span>User</div>
+        <div class="role-btn" id="btnA" onclick="selRole('admin')"><span class="ri">🛡️</span>Admin</div>
+      </div>
+    </div>
+    <div class="admin-f" id="adminF">
+      <div class="fg"><label>Username</label><input type="text" id="aUser" autocomplete="off"></div>
+      <div class="fg"><label>Password</label><input type="password" id="aPass"></div>
+    </div>
+    <div class="err" id="loginErr" style="display:none;">❌ Invalid username or password.</div>
+    <button class="btn btn-acc btn-full" onclick="doLogin()" style="margin-top:10px">▶ Enter System</button>
+    <p style="font-size:12px;color:var(--tx2);text-align:center;margin-top:12px;cursor:pointer;padding:4px" onclick="goSetup()">🔧 Change database URL</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-l"><span style="font-size:19px">⚙️</span><h2>MoldPM</h2><span class="badge" id="roleBadge">User</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">⬅ Logout</button>
+  </div>
+  <div class="sync-bar"><div class="dot" id="sDot"></div><span id="sTxt">Connected</span></div>
+  <div class="tabs">
+    <div class="tab active" onclick="goSec('dash')">📊 Dashboard</div>
+    <div class="tab" onclick="goSec('new')">➕ New PM</div>
+    <div class="tab" onclick="goSec('recs')">📋 Records</div>
+    <div class="tab adm-only" onclick="goSec('mgmt')" style="display:none">⚙️ Manage</div>
+  </div>
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="sec active" id="sec-dash">
+      <div class="sec-hdr">
+        <div class="sec-t">Dashboard <span>Overview</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+      </div>
+      <div class="stats" id="stats">
+        <div class="stat" onclick="dashFilter('all')" id="st-all"><div class="sn">—</div><div class="sl">Total PM</div></div>
+        <div class="stat" onclick="dashFilter('done')" id="st-done"><div class="sn" style="color:#3fb950">—</div><div class="sl">Completed</div></div>
+        <div class="stat" onclick="dashFilter('wip')" id="st-wip"><div class="sn" style="color:var(--acc)">—</div><div class="sl">In Progress</div></div>
+      </div>
+      <div class="block"><h3>Recent PM Activities</h3>
+        <div id="recentList"><div class="empty"><div class="ei">⏳</div><h4>Loading...</h4></div></div>
+      </div>
+    </div>
+
+    <!-- NEW PM -->
+    <div class="sec" id="sec-new">
+      <div class="sec-hdr"><div class="sec-t">New <span>PM Entry</span></div></div>
+      <div class="block"><h3>📝 PM Details</h3>
+        <div class="form-row">
+          <div class="fg"><label>Person In Charge *</label><select id="fPIC"><option value="">— Select —</option></select></div>
+          <div class="fg"><label>Mold Die ID *</label><select id="fMold"><option value="">— Select —</option></select></div>
+        </div>
+        <div class="fg"><label>Type of Maintenance *</label><select id="fType"><option value="">— Select —</option></select></div>
+        <div class="form-row">
+          <div class="fg"><label>Date Start *</label><input type="date" id="fDs"></div>
+          <div class="fg"><label>Date Finish <span style="font-weight:400;color:var(--tx2)">(leave blank if ongoing)</span></label><input type="date" id="fDf"></div>
+        </div>
+        <div class="fg"><label>Details / Findings *</label><textarea id="fDet" placeholder="Describe findings, issues, observations..."></textarea></div>
+        <div class="fg">
+          <label>Tools / Parts Changed * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx2);font-size:11px">&nbsp;tick all that apply</span></label>
+          <div class="chips-wrap" id="partsGrid"></div>
+        </div>
+        <div class="fg">
+          <label>PM Photos <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx2);font-size:11px">&nbsp;optional · max 5 photos</span></label>
+          <div class="photo-drop">
+            <input type="file" id="photoInput" accept="image/*" multiple onchange="onPhotoPick(event)">
+            <div class="pd-ico">📷</div>
+            <div class="pd-txt"><strong>Tap to take photo or choose from gallery</strong><br>Photos auto-compressed for faster upload</div>
+          </div>
+          <div class="photo-grid" id="photoGrid"></div>
+          <div class="upinfo" id="upinfo"></div>
+        </div>
+        <div class="err" id="formErr"></div>
+        <button class="btn btn-acc btn-full" id="subBtn" onclick="submitPM()" style="margin-top:10px">✔ Submit PM Record</button>
+      </div>
+    </div>
+
+    <!-- RECORDS -->
+    <div class="sec" id="sec-recs">
+      <div class="sec-hdr">
+        <div class="sec-t">PM <span>Records</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadRecs(true)">🔄 Refresh</button>
+      </div>
+      <div class="fbar">
+        <input type="text" id="fSrch" placeholder="🔍 Search..." oninput="applyF()">
+        <select id="fFpic" onchange="applyF()"><option value="">All PIC</option></select>
+        <select id="fFmold" onchange="applyF()"><option value="">All Mold</option></select>
+        <select id="fFtype" onchange="applyF()"><option value="">All Types</option></select>
+        <select id="fFstat" onchange="applyF()">
+          <option value="">All Status</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="rlist" id="recList"></div>
+    </div>
+
+    <!-- MANAGE -->
+    <div class="sec" id="sec-mgmt">
+      <div class="sec-hdr"><div class="sec-t">Admin <span>Manage</span></div></div>
+      <div class="block"><h3>👷 Person In Charge</h3>
+        <div class="add-r"><input type="text" id="addPICIn" placeholder="New PIC name..."><button class="btn btn-grn btn-sm" onclick="addPIC()">+ Add</button></div>
+        <div class="mlist" id="picList"></div>
+      </div>
+      <div class="block"><h3>🔧 Mold Die IDs</h3>
+        <div class="add-r"><input type="text" id="addMoldIn" placeholder="New Mold Die ID..."><button class="btn btn-grn btn-sm" onclick="addMold()">+ Add</button></div>
+        <div class="mlist" id="moldList"></div>
+      </div>
+      <div class="block"><h3>🔩 Tools / Parts</h3>
+        <div class="add-r"><input type="text" id="addPartIn" placeholder="New part or tool..."><button class="btn btn-grn btn-sm" onclick="addPart()">+ Add</button></div>
+        <div class="mlist" id="partList"></div>
+      </div>
+      <div class="block"><h3>🗂️ Maintenance Types</h3>
+        <div class="add-r"><input type="text" id="addTypeIn" placeholder="New maintenance type..."><button class="btn btn-grn btn-sm" onclick="addType()">+ Add</button></div>
+        <div class="mlist" id="typeList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="mover" id="editMod">
+  <div class="mbox">
+    <h3>✏️ Edit PM Record</h3>
+    <input type="hidden" id="editId">
+    <div class="form-row">
+      <div class="fg"><label>Person In Charge</label><select id="ePIC"></select></div>
+      <div class="fg"><label>Mold Die ID</label><select id="eMold"></select></div>
+    </div>
+    <div class="fg"><label>Maintenance Type</label><select id="eType"></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Date Start</label><input type="date" id="eDs"></div>
+      <div class="fg"><label>Date Finish</label><input type="date" id="eDf"></div>
+    </div>
+    <div class="fg"><label>Details / Findings</label><textarea id="eDet" style="min-height:80px"></textarea></div>
+    <div class="fg">
+      <label>Tools / Parts Changed</label>
+      <div class="chips-wrap" id="editPartsGrid"></div>
+    </div>
+    <div class="err" id="editErr"></div>
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-acc" onclick="saveEdit()" id="saveEditBtn">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="mover" id="delMod">
+  <div class="mbox">
+    <h3>🗑️ Delete Record</h3>
+    <p style="color:var(--tx2);font-size:14px;line-height:1.5">Are you sure? This cannot be undone.</p>
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeMod('delMod')">Cancel</button>
+      <button class="btn btn-red" onclick="confirmDel()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARK DONE MODAL -->
+<div class="mover" id="doneMod">
+  <div class="mbox">
+    <h3>✅ Mark as Completed</h3>
+    <input type="hidden" id="doneId">
+    <div class="fg"><label>Date Finish</label><input type="date" id="doneDf"></div>
+    <p style="color:var(--tx2);font-size:13px;margin-top:-4px">Leave today's date or change if needed.</p>
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeMod('doneMod')">Cancel</button>
+      <button class="btn btn-grn" onclick="confirmDone()">✅ Mark Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lbc" onclick="closeLB()">✕</button>
+  <img id="lbImg" src="" alt="">
+  <a id="lbLink" class="btn btn-ghost btn-sm lba" href="#" target="_blank" style="display:none">🔗 Open in Drive</a>
+</div>
+
+<!-- LOADER -->
+<div class="lover" id="lOver"><div class="sp"></div><div class="ltxt" id="lTxt">Loading...</div></div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────
+const AU='moldPM', AP='moldPM123', UK='moldpm_v8';
+// Larger chunks = fewer requests = faster upload
+// Each chunk is 3000 raw base64 chars → ~4000 chars URL-encoded → well within 8KB URL limit
+const CHUNK_SIZE = 3000;
+const MAX_PHOTOS = 3;
+// Compress photos to max 800px wide, 0.7 quality → ~70% smaller
+const IMG_MAX_PX = 800;
+const IMG_QUALITY = 0.72;
+
+let role=null, sRole=null, APPURL='';
+let recs=[], pics=[], molds=[], parts=[], types=[];
+let photoQueue=[];
+let delId=null, cbN=0, dashActiveFilter='all';
+
+// ─── JSONP ───────────────────────────────────────────────────
+function jsonp(params, ms){
+  return new Promise((res,rej)=>{
+    const cb='_cb'+(++cbN)+'_'+Date.now();
+    const tid=setTimeout(()=>{cleanup();rej(new Error('Request timed out.'));},ms||25000);
+    function cleanup(){clearTimeout(tid);delete window[cb];const el=document.getElementById(cb);if(el)el.remove();}
+    window[cb]=d=>{cleanup();res(d);};
+    params.callback=cb;
+    const qs=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(String(v??''))).join('&');
+    const s=document.createElement('script');s.id=cb;
+    s.src=APPURL+'?'+qs+'&_t='+Date.now();
+    s.onerror=()=>{cleanup();rej(new Error('Network error. Check /exec URL and access=Anyone.'));};
+    document.head.appendChild(s);
+  });
+}
+
+// ─── IMAGE COMPRESSION ──────────────────────────────────────
+// Resize + compress photo in browser before uploading = much smaller = fewer chunks = faster
+function compressImage(dataUrl, maxPx, quality){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      let {width:w,height:h}={width:img.width,height:img.height};
+      if(w>maxPx||h>maxPx){
+        if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+        else{w=Math.round(w*maxPx/h);h=maxPx;}
+      }
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      res(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=dataUrl;
+  });
+}
+
+// ─── PHOTO UPLOAD via JSONP chunks ───────────────────────────
+async function uploadPhotoByChunks(entry){
+  // 1. Compress first
+  const compressed=await compressImage(entry.dataUrl,IMG_MAX_PX,IMG_QUALITY);
+  const base64=compressed.split(',')[1];
+  const mime='image/jpeg';
+  const name='PM_'+Date.now()+'_'+entry.idx+'.jpg';
+  const uploadId='uid_'+Date.now()+'_'+entry.idx;
+
+  const chunks=[];
+  for(let i=0;i<base64.length;i+=CHUNK_SIZE) chunks.push(base64.substring(i,i+CHUNK_SIZE));
+  const total=chunks.length;
+
+  updPI(entry.idx,'uploading','0/'+total);
+
+  for(let i=0;i<chunks.length;i++){
+    const r=await jsonp({action:'photoChunk',uploadId,chunkIdx:i,total,data:chunks[i],name,mime},30000);
+    if(r.status!=='ok'){
+      jsonp({action:'photoAbort',uploadId}).catch(()=>{});
+      throw new Error('Chunk '+i+' failed: '+(r.message||''));
+    }
+    updPI(entry.idx,'uploading',(i+1)+'/'+total);
+  }
+
+  updPI(entry.idx,'assembling','');
+  const r=await jsonp({action:'photoAssemble',uploadId},90000);
+  if(r.status!=='ok') throw new Error('Assembly failed: '+(r.message||''));
+  return{thumbUrl:r.thumbUrl,viewUrl:r.viewUrl};
+}
+
+function updPI(idx,state,label){
+  const el=document.getElementById('pi-'+idx);if(!el)return;
+  if(state==='uploading'){
+    let ov=el.querySelector('.ov');
+    if(!ov){ov=document.createElement('div');ov.className='ov';el.appendChild(ov);}
+    ov.innerHTML=`<div class="pi-sp"></div><div class="pi-prog">${label}</div>`;
+  }else if(state==='assembling'){
+    const ov=el.querySelector('.ov');if(ov)ov.innerHTML=`<div class="pi-sp"></div><div class="pi-prog">Saving…</div>`;
+  }else if(state==='done'){
+    const ov=el.querySelector('.ov');if(ov)ov.remove();
+    const t=document.createElement('div');t.className='ov';t.style.background='rgba(35,134,54,.6)';
+    t.innerHTML='<div style="font-size:22px">✅</div>';el.appendChild(t);
+    setTimeout(()=>t.remove(),1500);
+  }else if(state==='fail'){
+    const ov=el.querySelector('.ov');if(ov)ov.innerHTML='<div style="font-size:20px">❌</div>';
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+function init(){
+  try {
+    const u = localStorage.getItem(UK);
+    if(u && u.includes('script.google.com') && u.includes('/exec')){
+      APPURL = u;
+      document.getElementById('urlInput').value = u;
+      showLogin();
+    } else {
+      localStorage.removeItem(UK);
+      showSetup();
+    }
+  } catch(e) {
+    showSetup();
+  }
+}
+// Called from "Change database URL" link — always lands on setup
+function resetAndSetup(){
+  localStorage.removeItem(UK);APPURL='';
+  document.getElementById('urlInput').value='';
+  document.getElementById('setupErr').classList.remove('show');
+  document.getElementById('setupOk').classList.remove('show');
+  showSetup();
+}
+function showSetup(){
+  var s=document.getElementById('setupScreen');
+  var l=document.getElementById('loginScreen');
+  s.style.display='flex';
+  l.style.display='none';
+  l.classList.remove('active');
+}
+function showLogin(){
+  var s=document.getElementById('setupScreen');
+  var l=document.getElementById('loginScreen');
+  s.style.display='none';
+  l.style.display='flex';
+  l.classList.add('active');
+}
+function goSetup(){localStorage.removeItem(UK);APPURL='';document.getElementById('app').style.display='none';showSetup();}
+
+// ─── CONNECT ────────────────────────────────────────────────
+async function doConnect(){
+  const raw=document.getElementById('urlInput').value;
+  const u=raw.replace(/\s+/g,'').trim();
+  document.getElementById('urlInput').value=u;
+  const eEl=document.getElementById('setupErr'),oEl=document.getElementById('setupOk');
+  // hide both messages
+  eEl.style.display='none'; oEl.style.display='none';
+  if(!u){eEl.textContent='⚠️ Please paste your Apps Script URL.';eEl.style.display='block';return;}
+  if(!u.includes('script.google.com')){eEl.textContent='⚠️ URL must be from script.google.com';eEl.style.display='block';return;}
+  if(!u.includes('/exec')){eEl.textContent='⚠️ URL must end with /exec — check your deployment URL';eEl.style.display='block';return;}
+  const btn=document.getElementById('connectBtn');
+  btn.disabled=true;
+  btn.textContent='⏳ CONNECTING...';
+  btn.style.background='#7a5200';
+  btn.style.color='#aaa';
+  APPURL=u;
+  try{
+    const r=await jsonp({action:'ping'},25000);
+    if(r&&r.status==='ok'){
+      localStorage.setItem(UK,u);
+      btn.textContent='✅ CONNECTED!';
+      btn.style.background='#238636';
+      btn.style.color='#fff';
+      oEl.style.display='block';
+      setTimeout(()=>{
+        btn.disabled=false;
+        btn.textContent='🔗 CONNECT TO GOOGLE SHEETS';
+        btn.style.background='#f0a500';
+        btn.style.color='#000';
+        showLogin();
+      },1200);
+    }else throw new Error('Server replied with error: '+JSON.stringify(r));
+  }catch(e){
+    APPURL='';
+    eEl.innerHTML='❌ '+e.message+'<br><br><span style="cursor:pointer;color:#f0a500;text-decoration:underline;" onclick="localStorage.removeItem(\''+UK+'\');document.getElementById(\'urlInput\').value=\'\';this.parentElement.style.display=\'none\';">Tap here to clear saved URL and try again</span>';
+    eEl.style.display='block';
+    btn.disabled=false;
+    btn.textContent='🔗 CONNECT TO GOOGLE SHEETS';
+    btn.style.background='#f0a500';
+    btn.style.color='#000';
+  }
+}
+
+// ─── LOGIN ───────────────────────────────────────────────────
+function selRole(r){
+  sRole=r;
+  document.getElementById('btnU').classList.toggle('active',r==='user');
+  document.getElementById('btnA').classList.toggle('active',r==='admin');
+  document.getElementById('adminF').style.display=(r==='admin')?'block':'none';
+  document.getElementById('loginErr').style.display='none';
+}
+async function doLogin(){
+  if(!sRole){toast('Please select User or Admin.');return;}
+  if(sRole==='admin'){
+    if(document.getElementById('aUser').value.trim()!==AU||document.getElementById('aPass').value!==AP){
+      document.getElementById('loginErr').style.display='block';
+      return;
+    }
+    role='admin';
+  } else {
+    role='user';
+  }
+  // Hide login, show app
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('loginScreen').classList.remove('active');
+  const app=document.getElementById('app');
+  app.style.display='flex';
+  const b=document.getElementById('roleBadge');
+  b.textContent=role==='admin'?'🛡️ Admin':'👷 User';
+  if(role==='admin') b.classList.add('adm');
+  document.querySelectorAll('.adm-only').forEach(el=>el.style.display=role==='admin'?'':'none');
+  load('Loading...');
+  await refreshAll();
+  unload();
+  goSec('dash');
+}
+function doLogout(){
+  role=null;sRole=null;recs=[];pics=[];molds=[];parts=[];types=[];photoQueue=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('roleBadge').classList.remove('adm');
+  ['btnU','btnA'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('adminF').style.display='none';
+  document.getElementById('aUser').value='';
+  document.getElementById('aPass').value='';
+  document.getElementById('loginErr').style.display='none';
+  showLogin();
+}
+
+// ─── SYNC ────────────────────────────────────────────────────
+function sy(s){
+  const d=document.getElementById('sDot'),t=document.getElementById('sTxt');
+  d.className='dot'+(s==='sync'?' spin':s==='off'?' off':'');
+  t.textContent={sync:'Syncing...',off:'⚠️ Error — tap Refresh',ok:'Connected to Google Sheets'}[s]||'';
+}
+
+// ─── DATA ────────────────────────────────────────────────────
+async function refreshAll(){
+  sy('sync');
+  try{
+    const r=await jsonp({action:'getAll'});
+    pics=r.pics||[];molds=r.molds||[];parts=r.parts||[];types=r.types||[];recs=r.records||[];
+    sy('ok');fillSels();renderPartsGrid();renderTypesSel();renderDash();
+  }catch(e){sy('off');toast('⚠️ '+e.message);}
+}
+async function loadRecs(refresh){
+  if(refresh){sy('sync');try{const r=await jsonp({action:'getRecords'});recs=r.records||[];sy('ok');}catch(e){sy('off');}}
+  fillFDDs();applyF();
+}
+
+// ─── NAV ─────────────────────────────────────────────────────
+function goSec(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  ['dash','new','recs','mgmt'].forEach((n,i)=>document.querySelectorAll('.tab')[i]?.classList.toggle('active',n===id));
+  if(id==='dash')renderDash();
+  if(id==='recs'){fillFDDs();applyF();}
+  if(id==='mgmt')renderMgmt();
+  if(id==='new'){fillSels();renderPartsGrid();renderTypesSel();resetPhotos();}
+}
+
+// ─── SELECTS ─────────────────────────────────────────────────
+function mkSel(id,ph,arr){const el=document.getElementById(id);if(!el)return;el.innerHTML=`<option value="">${ph}</option>`+arr.map(v=>`<option>${esc(v)}</option>`).join('');}
+function fillSels(){mkSel('fPIC','— Select —',pics);mkSel('fMold','— Select —',molds);}
+function renderTypesSel(){mkSel('fType','— Select —',types);}
+function fillFDDs(){
+  const [cv,cm,ct]=[document.getElementById('fFpic').value,document.getElementById('fFmold').value,document.getElementById('fFtype').value];
+  mkSel('fFpic','All PIC',pics);mkSel('fFmold','All Mold',molds);mkSel('fFtype','All Types',types);
+  document.getElementById('fFpic').value=cv;document.getElementById('fFmold').value=cm;document.getElementById('fFtype').value=ct;
+}
+
+// ─── CHIPS ───────────────────────────────────────────────────
+function renderChips(containerId,arr,selectedArr){
+  const g=document.getElementById(containerId);
+  if(!arr.length){g.innerHTML='<p style="color:var(--tx2);font-size:13px">No parts yet.</p>';return;}
+  g.innerHTML=arr.map(p=>{
+    const sel=selectedArr&&selectedArr.includes(p)?'sel':'';
+    return`<div class="chip ${sel}" data-part="${esc(p)}" onclick="this.classList.toggle('sel')"><div class="ck">✓</div>${esc(p)}</div>`;
+  }).join('');
+}
+function renderPartsGrid(){renderChips('partsGrid',parts,[]);}
+function getSelChips(cid){return[...document.querySelectorAll('#'+cid+' .chip.sel')].map(c=>c.dataset.part);}
+function clearChips(cid){document.querySelectorAll('#'+cid+' .chip').forEach(c=>c.classList.remove('sel'));}
+
+// ─── PHOTOS ──────────────────────────────────────────────────
+function resetPhotos(){photoQueue=[];document.getElementById('photoGrid').innerHTML='';document.getElementById('upinfo').textContent='';document.getElementById('photoInput').value='';}
+function onPhotoPick(e){
+  const remaining=MAX_PHOTOS-photoQueue.filter(p=>p&&p.state!=='removed').length;
+  const files=[...e.target.files].slice(0,remaining);
+  if(files.length<[...e.target.files].length)toast(`⚠️ Max ${MAX_PHOTOS} photos per record.`);
+  files.forEach(file=>{
+    if(!file.type.startsWith('image/')){toast('⚠️ Images only.');return;}
+    const idx=photoQueue.length;
+    const entry={idx,file,dataUrl:null,state:'reading'};
+    photoQueue.push(entry);
+    const div=document.createElement('div');div.className='pi';div.id='pi-'+idx;
+    div.innerHTML='<div class="ov"><div class="pi-sp"></div></div>';
+    document.getElementById('photoGrid').appendChild(div);
+    const reader=new FileReader();
+    reader.onload=ev=>{entry.dataUrl=ev.target.result;entry.state='pending';div.innerHTML=`<img src="${ev.target.result}"><button class="pi-rm" onclick="removePhoto(${idx})">✕</button>`;};
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+function removePhoto(idx){const e=photoQueue.find(p=>p&&p.idx===idx);if(e)e.state='removed';document.getElementById('pi-'+idx)?.remove();}
+async function uploadAllPhotos(){
+  const pending=photoQueue.filter(p=>p&&p.state==='pending');
+  if(!pending.length)return[];
+  const info=document.getElementById('upinfo');
+  const results=[];
+  for(let i=0;i<pending.length;i++){
+    const entry=pending[i];
+    info.textContent=`📤 Uploading photo ${i+1} of ${pending.length}… (compressing first)`;
+    try{
+      const r=await uploadPhotoByChunks(entry);
+      entry.state='done';entry.thumbUrl=r.thumbUrl;entry.viewUrl=r.viewUrl;
+      results.push({thumbUrl:r.thumbUrl,viewUrl:r.viewUrl});
+      updPI(entry.idx,'done','');
+    }catch(e2){entry.state='fail';updPI(entry.idx,'fail','');toast('⚠️ Photo '+(i+1)+' failed: '+e2.message);}
+  }
+  info.textContent=results.length?`✅ ${results.length} photo${results.length>1?'s':''} saved to Google Drive`:'';
+  return results;
+}
+
+// ─── SUBMIT ──────────────────────────────────────────────────
+async function submitPM(){
+  const pic=document.getElementById('fPIC').value,mold=document.getElementById('fMold').value,
+        mtype=document.getElementById('fType').value,ds=document.getElementById('fDs').value,
+        df=document.getElementById('fDf').value,det=document.getElementById('fDet').value.trim();
+  const selParts=getSelChips('partsGrid');
+  const eEl=document.getElementById('formErr');
+  if(!pic||!mold||!mtype||!ds||!det){eEl.textContent='⚠️ Fill in: PIC, Mold ID, Maintenance Type, Date Start, Findings.';eEl.classList.add('show');return;}
+  if(!selParts.length){eEl.textContent='⚠️ Select at least one Tool/Part (use "NA" if nothing changed).';eEl.classList.add('show');return;}
+  eEl.classList.remove('show');
+  const btn=document.getElementById('subBtn');btn.disabled=true;btn.textContent='⏳ Saving...';sy('sync');
+  try{
+    const uploaded=await uploadAllPhotos();
+    const r=await jsonp({action:'addRecord',pic,mold,maintenanceType:mtype,dateStart:ds,dateFinish:df||'',details:det,parts:selParts.join(', '),photos:JSON.stringify(uploaded)});
+    if(r.status==='ok'){
+      recs.unshift(r.record);
+      ['fPIC','fMold','fType','fDs','fDf','fDet'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      clearChips('partsGrid');resetPhotos();sy('ok');toast('✅ PM Record saved!');goSec('recs');
+    }else throw new Error(r.message||'Save failed');
+  }catch(e){sy('off');toast('❌ '+e.message);}
+  btn.disabled=false;btn.textContent='✔ Submit PM Record';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────
+let activeDashFilter='all';
+function dashFilter(f){
+  activeDashFilter=f;
+  ['all','done','wip'].forEach(k=>{
+    const el=document.getElementById('st-'+k);
+    if(el)el.classList.toggle('active-filter',k===f);
+  });
+  renderRecentList();
+}
+function renderDash(){
+  const tot=recs.length,done=recs.filter(r=>r.status==='completed').length,wip=tot-done;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat" onclick="dashFilter('all')" id="st-all"><div class="sn">${tot}</div><div class="sl">Total PM</div></div>
+    <div class="stat" onclick="dashFilter('done')" id="st-done"><div class="sn" style="color:#3fb950">${done}</div><div class="sl">Completed</div></div>
+    <div class="stat" onclick="dashFilter('wip')" id="st-wip"><div class="sn" style="color:var(--acc)">${wip}</div><div class="sl">In Progress</div></div>`;
+  dashFilter(activeDashFilter||'all');
+}
+function renderRecentList(){
+  let r=recs;
+  if(activeDashFilter==='done')r=recs.filter(x=>x.status==='completed');
+  else if(activeDashFilter==='wip')r=recs.filter(x=>x.status!=='completed');
+  const show=r.slice(0,8);
+  document.getElementById('recentList').innerHTML=show.length?show.map(x=>rCard(x,true)).join(''):`<div class="empty"><div class="ei">📋</div><h4>No records</h4></div>`;
+}
+
+// ─── RECORDS ─────────────────────────────────────────────────
+function applyF(){
+  const s=(document.getElementById('fSrch')?.value||'').toLowerCase();
+  const fp=document.getElementById('fFpic')?.value||'';
+  const fm=document.getElementById('fFmold')?.value||'';
+  const ft=document.getElementById('fFtype')?.value||'';
+  const fs=document.getElementById('fFstat')?.value||'';
+  let rs=[...recs];
+  if(fp)rs=rs.filter(r=>r.pic===fp);if(fm)rs=rs.filter(r=>r.mold===fm);
+  if(ft)rs=rs.filter(r=>r.maintenanceType===ft);if(fs)rs=rs.filter(r=>r.status===fs);
+  if(s)rs=rs.filter(r=>[r.id,r.pic,r.mold,r.maintenanceType,r.details,r.parts].some(v=>(v||'').toLowerCase().includes(s)));
+  const el=document.getElementById('recList');if(!el)return;
+  el.innerHTML=rs.length?rs.map(r=>rCard(r,false)).join(''):`<div class="empty"><div class="ei">🔍</div><h4>No Records Found</h4></div>`;
+}
+
+function rCard(r,mini){
+  const done=r.status==='completed';
+  const pList=(r.parts||'').split(',').map(p=>p.trim()).filter(Boolean);
+  const pTags=pList.map(p=>`<span class="ptag">${esc(p)}</span>`).join('');
+  let photosHTML='';
+  if(!mini){
+    try{
+      const photos=JSON.parse(r.photos||'[]');
+      if(photos.length){
+        const thumbs=photos.map(ph=>{
+          const id=ph.viewUrl?.match(/\/d\/([^/]+)\//)?.[1]||'';
+          const src=id?`https://lh3.googleusercontent.com/d/${id}=w200`:ph.thumbUrl||'';
+          return src?`<img class="photo-thumb" src="${esc(src)}" onclick="openLB('${esc(ph.thumbUrl||'')}','${esc(ph.viewUrl||'')}')" loading="lazy">`:'';
+        }).join('');
+        photosHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx2);margin:8px 0 5px">📷 Photos (${photos.length})</div><div class="photo-thumbs">${thumbs}</div>`;
+      }
+    }catch(e){}
+  }
+
+  // Action buttons — visible to all users
+  let actions='';
+  if(!mini){
+    actions='<div class="rec-actions">';
+    if(!done) actions+=`<button class="btn btn-grn btn-xs" onclick="openDone('${r.id}')">✅ Mark Done</button>`;
+    else       actions+=`<button class="btn btn-warn btn-xs" onclick="reopenRec('${r.id}')">🔄 Reopen</button>`;
+    actions+=`<button class="btn btn-blue btn-xs" onclick="openEdit('${r.id}')">✏️ Edit</button>`;
+    actions+=`<button class="btn btn-red btn-xs" onclick="delRec('${r.id}')">🗑️ Delete</button>`;
+    actions+='</div>';
+  }
+
+  return `<div class="rec ${done?'status-done':'status-wip'}">
+    <div class="rec-hdr">
+      <div><div class="rec-id">${esc(r.mold)}</div><div class="rec-sub">👷 ${esc(r.pic)} &nbsp;|&nbsp; 🆔 ${esc(r.id)}</div></div>
+      <span class="sbadge ${done?'s-ok">✅ Done':'s-wip">🔄 In Progress'}</span>
+    </div>
+    ${r.maintenanceType?`<span class="rtype">🗂️ ${esc(r.maintenanceType)}</span>`:''}
+    <div class="rmeta">
+      <div class="rmi">📅 Start: <strong>${fd(r.dateStart)}</strong></div>
+      ${r.dateFinish?`<div class="rmi">🏁 Finish: <strong>${fd(r.dateFinish)}</strong></div>`:''}
+    </div>
+    ${!mini?`
+      <div class="rdet">📝 <strong>Findings:</strong> ${esc(r.details)}</div>
+      ${pTags?`<div class="parts-tags">${pTags}</div>`:''}
+      ${photosHTML}
+      ${actions}
+    `:`${pTags?`<div class="parts-tags" style="margin-top:6px">${pTags}</div>`:''}`}
+  </div>`;
+}
+
+// ─── MARK DONE ───────────────────────────────────────────────
+function openDone(id){
+  document.getElementById('doneId').value=id;
+  document.getElementById('doneDf').value=new Date().toISOString().split('T')[0];
+  document.getElementById('doneMod').classList.add('show');
+}
+async function confirmDone(){
+  const id=document.getElementById('doneId').value;
+  const df=document.getElementById('doneDf').value;
+  closeMod('doneMod');sy('sync');
+  try{
+    const r=await jsonp({action:'updateStatus',id,newStatus:'completed',dateFinish:df});
+    if(r.status==='ok'){
+      const rec=recs.find(x=>x.id===id);
+      if(rec){rec.status='completed';rec.dateFinish=r.dateFinish;}
+      sy('ok');toast('✅ Marked as completed!');applyF();renderDash();
+    }else throw new Error(r.message);
+  }catch(e){sy('off');toast('❌ '+e.message);}
+}
+async function reopenRec(id){
+  sy('sync');
+  try{
+    const r=await jsonp({action:'updateStatus',id,newStatus:'in_progress',dateFinish:''});
+    if(r.status==='ok'){
+      const rec=recs.find(x=>x.id===id);
+      if(rec){rec.status='in_progress';rec.dateFinish='';}
+      sy('ok');toast('🔄 Record reopened.');applyF();renderDash();
+    }else throw new Error(r.message);
+  }catch(e){sy('off');toast('❌ '+e.message);}
+}
+
+// ─── EDIT ────────────────────────────────────────────────────
+function openEdit(id){
+  const r=recs.find(x=>x.id===id);if(!r)return;
+  document.getElementById('editId').value=id;
+  // Populate edit selects
+  mkSel('ePIC','— Select —',pics);mkSel('eMold','— Select —',molds);mkSel('eType','— Select —',types);
+  document.getElementById('ePIC').value=r.pic;
+  document.getElementById('eMold').value=r.mold;
+  document.getElementById('eType').value=r.maintenanceType;
+  document.getElementById('eDs').value=r.dateStart;
+  document.getElementById('eDf').value=r.dateFinish||'';
+  document.getElementById('eDet').value=r.details;
+  document.getElementById('editErr').classList.remove('show');
+  // Chips with pre-selected parts
+  const selParts=(r.parts||'').split(',').map(p=>p.trim()).filter(Boolean);
+  renderChips('editPartsGrid',parts,selParts);
+  document.getElementById('editMod').classList.add('show');
+}
+function closeEdit(){document.getElementById('editMod').classList.remove('show');}
+async function saveEdit(){
+  const id=document.getElementById('editId').value;
+  const pic=document.getElementById('ePIC').value,mold=document.getElementById('eMold').value,
+        mtype=document.getElementById('eType').value,ds=document.getElementById('eDs').value,
+        df=document.getElementById('eDf').value,det=document.getElementById('eDet').value.trim();
+  const selParts=getSelChips('editPartsGrid');
+  const eEl=document.getElementById('editErr');
+  if(!pic||!mold||!mtype||!ds||!det){eEl.textContent='⚠️ All required fields must be filled.';eEl.classList.add('show');return;}
+  if(!selParts.length){eEl.textContent='⚠️ Select at least one part.';eEl.classList.add('show');return;}
+  const btn=document.getElementById('saveEditBtn');btn.disabled=true;btn.textContent='Saving...';sy('sync');
+  try{
+    const r=await jsonp({action:'editRecord',id,pic,mold,maintenanceType:mtype,dateStart:ds,dateFinish:df||'',details:det,parts:selParts.join(', ')});
+    if(r.status==='ok'){
+      const idx=recs.findIndex(x=>x.id===id);
+      if(idx>=0)recs[idx]={...recs[idx],...r.record};
+      closeEdit();sy('ok');toast('✅ Record updated!');applyF();renderDash();
+    }else throw new Error(r.message||'Edit failed');
+  }catch(e){sy('off');toast('❌ '+e.message);}
+  btn.disabled=false;btn.textContent='💾 Save Changes';
+}
+
+// ─── DELETE ──────────────────────────────────────────────────
+function delRec(id){delId=id;document.getElementById('delMod').classList.add('show');}
+async function confirmDel(){
+  if(!delId)return;closeMod('delMod');sy('sync');
+  try{
+    const r=await jsonp({action:'deleteRecord',id:delId});
+    if(r.status==='ok'){recs=recs.filter(x=>x.id!==delId);delId=null;sy('ok');applyF();renderDash();toast('🗑️ Deleted.');}
+  }catch(e){sy('off');toast('❌ Delete failed.');}
+}
+function closeMod(id){document.getElementById(id).classList.remove('show');}
+
+// ─── MANAGE ──────────────────────────────────────────────────
+function renderMgmt(){
+  rL('picList',pics,'👷','delPIC');rL('moldList',molds,'🔧','delMold');
+  rL('partList',parts,'🔩','delPart');rL('typeList',types,'🗂️','delType');
+}
+function rL(id,arr,icon,fn){document.getElementById(id).innerHTML=arr.length?arr.map((v,i)=>`<div class="mitem"><span>${icon} ${esc(v)}</span><button class="btn btn-red btn-xs" onclick="${fn}(${i})">Remove</button></div>`).join(''):`<p style="color:var(--tx2);font-size:13px;padding:4px">None yet.</p>`;}
+async function mAdd(action,paramFn,arr,inputId,listId,icon,fnName,postFn){
+  const v=document.getElementById(inputId).value.trim();if(!v)return;if(arr.includes(v)){toast('⚠️ Already exists.');return;}
+  sy('sync');try{const r=await jsonp({action,...paramFn(v)});if(r.status==='ok'){arr.push(v);document.getElementById(inputId).value='';rL(listId,arr,icon,fnName);if(postFn)postFn();sy('ok');toast('✅ Added.');}else toast('⚠️ '+(r.message||'Failed'));}catch(e){sy('off');toast('❌ '+e.message);}
+}
+async function mDel(action,paramFn,arr,idx,listId,icon,fnName,postFn){
+  sy('sync');try{const r=await jsonp({action,...paramFn(arr[idx])});if(r.status==='ok'){arr.splice(idx,1);rL(listId,arr,icon,fnName);if(postFn)postFn();sy('ok');toast('🗑️ Removed.');}else toast('⚠️ '+(r.message||'Failed'));}catch(e){sy('off');toast('❌ '+e.message);}
+}
+function addPIC()  {mAdd('addPIC',  v=>({name:v}),   pics,  'addPICIn', 'picList', '👷','delPIC');}
+function addMold() {mAdd('addMold', v=>({moldId:v}), molds, 'addMoldIn','moldList','🔧','delMold');}
+function addPart() {mAdd('addPart', v=>({part:v}),   parts, 'addPartIn','partList','🔩','delPart',renderPartsGrid);}
+function addType() {mAdd('addType', v=>({mtype:v}),  types, 'addTypeIn','typeList','🗂️','delType',renderTypesSel);}
+function delPIC(i)  {mDel('deletePIC',  v=>({name:v}),   pics,  i,'picList', '👷','delPIC');}
+function delMold(i) {mDel('deleteMold', v=>({moldId:v}), molds, i,'moldList','🔧','delMold');}
+function delPart(i) {mDel('deletePart', v=>({part:v}),   parts, i,'partList','🔩','delPart',renderPartsGrid);}
+function delType(i) {mDel('deleteType', v=>({mtype:v}),  types, i,'typeList','🗂️','delType',renderTypesSel);}
+
+// ─── LIGHTBOX ────────────────────────────────────────────────
+function openLB(thumb,view){
+  const id=view?.match(/\/d\/([^/]+)\//)?.[1]||'';
+  document.getElementById('lbImg').src=id?`https://lh3.googleusercontent.com/d/${id}=w1200`:thumb||view;
+  const la=document.getElementById('lbLink');la.href=view||'#';la.style.display=view?'':'none';
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLB(){document.getElementById('lightbox').classList.remove('show');document.getElementById('lbImg').src='';}
+document.getElementById('lightbox').addEventListener('click',function(e){if(e.target===this)closeLB();});
+
+// ─── UTILS ───────────────────────────────────────────────────
+function fd(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?d:dt.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function load(m){document.getElementById('lTxt').textContent=m||'Loading...';document.getElementById('lOver').classList.add('show');}
+function unload(){document.getElementById('lOver').classList.remove('show');}
+function toast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),4500);}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').classList.contains('active'))doLogin();});
+init();
+</script>
+</body>
+</html>
